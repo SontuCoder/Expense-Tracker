@@ -40,7 +40,6 @@ exports.registerUser = async (req, res)=>{
 
 exports.loginUser = async (req, res)=>{
     const { email, password } = req.body;
-    console.log("jo")
     try {
         if (!email || !password) {
             return res.status(400).json({ message: "All fields are required" });
@@ -52,7 +51,7 @@ exports.loginUser = async (req, res)=>{
         }
 
         const token = genereteToken(user._id);
-        res.json({
+        res.status(200).json({
             _id: user._id,
             fullName: user.fullName,
             email: user.email,
@@ -71,7 +70,7 @@ exports.getUserInfo = async (req, res)=>{
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        res.json({
+        res.status(200).json({
             _id: user._id,
             fullName: user.fullName,
             email: user.email,

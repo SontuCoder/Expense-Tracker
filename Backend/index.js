@@ -4,6 +4,9 @@ const cors = require('cors');
 const path = require("path");
 const connectDB = require("./config/db.js");
 const authRoutes = require("./routers/authRoutes.js");
+const incomeRoutes = require("./routers/incomeRoutes.js");
+const expenseRoutes = require("./routers/expenseRoutes.js");
+
 
 const app = express();
 
@@ -25,6 +28,12 @@ app.get('/', (req, res) => {
 connectDB();
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/income", incomeRoutes);
+app.use("/api/v1/expense", expenseRoutes);
+
+
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Start server
 app.listen(PORT, () => {
