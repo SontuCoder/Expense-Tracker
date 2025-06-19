@@ -1,12 +1,12 @@
 const User = require("../models/User.js");
 const jwt = require("jsonwebtoken");
 
-const genereteToken = (id)=>{
-    return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn:"1h"});
+const genereteToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 }
 
-exports.registerUser = async (req, res)=>{
-    const {fullName, email, password, profileImgPic } = req.body;
+exports.registerUser = async (req, res) => {
+    const { fullName, email, password, profileImageUrl } = req.body;
     try {
         if (!fullName || !email || !password) {
             return res.status(400).json({ message: "All fields are required" });
@@ -21,15 +21,17 @@ exports.registerUser = async (req, res)=>{
             fullName,
             email,
             password,
-            profileImgPic
+            profileImgUrl:profileImageUrl
         });
 
         const token = genereteToken(user._id);
         res.status(201).json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            profileImgPic: user.profileImgPic,
+            user: {
+                _id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                profileImgPic: user.profileImgUrl,
+            },
             token
         });
     } catch (error) {
@@ -38,7 +40,7 @@ exports.registerUser = async (req, res)=>{
 }
 
 
-exports.loginUser = async (req, res)=>{
+exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
         if (!email || !password) {
@@ -52,10 +54,12 @@ exports.loginUser = async (req, res)=>{
 
         const token = genereteToken(user._id);
         res.status(200).json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            profileImgPic: user.profileImgPic,
+            user: {
+                _id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                profileImgPic: user.profileImgUrl,
+            },
             token
         });
     } catch (error) {
@@ -64,7 +68,7 @@ exports.loginUser = async (req, res)=>{
 }
 
 
-exports.getUserInfo = async (req, res)=>{
+exports.getUserInfo = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select("-password");
         if (!user) {
@@ -74,9 +78,33 @@ exports.getUserInfo = async (req, res)=>{
             _id: user._id,
             fullName: user.fullName,
             email: user.email,
-            profileImgPic: user.profileImgPic
+            profileImgPic: user.profileImgUrl
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 }
+
+exports.uploadImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                message: "No file uploaded"
+            })
+        }
+        const imageUrl = req.file.path;
+        const userId = req.user._id;
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { profileImgUrl : imageUrl }
+        ).select("-password"); 
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ imageUrl });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error });
+    }
+};

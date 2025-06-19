@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../Components/layouts/AuthLayout.jsx";
 import Input from "../../Components/Inputs/input.jsx";
 import {validateEmail} from "../../utils/helper.js";
 import ProfilePhotoSelector from "../../Components/Inputs/ProfilePhotoSelector.jsx"
+import axiosInstance from "../../utils/axiosInstance.js";
+import { API_PATHS } from "../../utils/apiPaths.js";
+import { UserContext } from "../../Context/userContext.jsx";
+import toast from "react-hot-toast";
+import uploadImage from "../../utils/uploadImage.js";
 
 
 const Signup = () => {
@@ -12,6 +17,8 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
   const [error, setError] = useState(null);
+
+  const { updateUser } = useContext(UserContext);
 
   const navigate = useNavigate();
 
@@ -35,7 +42,34 @@ const Signup = () => {
     }
     setError("");
 
-    
+    try{
+
+      if(profilePic){
+        const imageUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imageUploadRes.imageUrl || "";
+      }
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
+        fullName,
+        email,
+        password,
+        profileImageUrl
+      });
+
+      const { token, user } = response.data;
+      if(token){
+        localStorage.setItem("expTracker", token);
+        updateUser(user);
+        navigate("/dashboard");
+        toast.success("User register successfully.");
+      }
+
+    } catch (error) {
+      if(error.response && error.response.data.message){
+        setError(error.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.")
+      }
+    }
   }
 
   return (

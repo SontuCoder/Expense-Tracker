@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../Components/layouts/AuthLayout.jsx";
 import Input from "../../Components/Inputs/input.jsx";
 import {validateEmail} from "../../utils/helper.js";
+import { API_PATHS } from "../../utils/apiPaths.js"; 
+import axiosInstance from "../../utils/axiosInstance.js";
+import toast from "react-hot-toast";
+import { UserContext } from "../../Context/userContext.jsx";
 
 const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
   const [error, setError] = useState(null);
+
+  const { updateUser } = useContext(UserContext);
 
   const navigate = useNavigate();
 
@@ -25,8 +31,28 @@ const Login = () => {
       return;
     }
     setError("");
-  }
+    try{
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password
+      });
+      const { token, user } = response.data;
 
+      if(token){
+        localStorage.setItem("expTracker", token);
+        updateUser(user);
+        navigate("/dashboard");
+        toast.success("Login successfull.");
+      }
+
+    } catch (error) {
+      if(error.response && error.response.data.message){
+        setError(error.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.")
+      }
+    }
+  }
 
   return (
     <AuthLayout>

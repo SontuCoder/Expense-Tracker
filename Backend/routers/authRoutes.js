@@ -5,6 +5,7 @@ const {
     registerUser,
     loginUser,
     getUserInfo,
+    uploadImage
 } = require("../controllers/authController.js")
 const {protect} = require("../middlewares/authmiddleware.js")
 
@@ -14,17 +15,6 @@ router.post("/register", registerUser);
 router.post("/login",loginUser);
 router.get("/getuser", protect, getUserInfo);
 
-router.post('/upload-image', upload.single("image"), (req, res)=>{
-    if(!req.file){
-        return res.status(400).json({
-            message: "No file uploaded"
-        })
-    }
-
-    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
-        req.file.filename
-    }`;
-    res.status(200).json({imageUrl});
-})
+router.post('/upload-image', upload.single("image"), protect, uploadImage);
 
 module.exports = router;

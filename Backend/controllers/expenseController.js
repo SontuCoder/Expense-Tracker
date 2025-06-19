@@ -44,8 +44,8 @@ exports.getAllExpenses = async(req, res)=>{
 exports.deleteExpense = async(req, res)=>{
 
     try {
-        const expense = await Income.findById(req.params.id);
-        
+        const expense = await Expense.findById(req.params.id);
+
         if (!expense) {
             return res.status(404).json({ message: 'Expense not found' });
         }
@@ -64,7 +64,7 @@ exports.downloadExpenseExcle = async(req, res)=>{
         const expense = await Expense.find({ userId }).sort({ date: -1 });
 
         const data = expense.map((item)=>({
-            Source: item.source,
+            Category: item.category,
             Amount: item.amount,
             Date: item.date
         }));
