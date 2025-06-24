@@ -8,6 +8,8 @@ import Modal from "../../Components/Modals/Modal.jsx"
 import AddInComeForm from "../../Components/Income/AddInComeForm.jsx"
 import IncomeList from "../../Components/Income/IncomeList.jsx"
 import { useUserAuth } from "../../Hooks/useUserAuth.jsx"
+import DeleteAlert from "../../Components/Income/DeleteAlert.jsx"
+import DownloadExcelForm from "../../Components/Income/DownloadExcelForm.jsx"
 
 
 const Income = () => {
@@ -19,6 +21,9 @@ const Income = () => {
     show: false,
     data: null,
   })
+
+  const [downloadIncomeModal, setDownloadIncomeModal] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const fetchIncomeDetails = async () => {
@@ -71,11 +76,43 @@ const Income = () => {
   }
 
   const deleteIncome = async (id) => {
-
+    try{
+      await axiosInstance.delete(`${API_PATHS.INCOME.DELETE(id)}`);
+      setOpenDeleteAlert({ show: false, data: null });
+      toast.success("Income deleted successfully");
+      fetchIncomeDetails();
+    } catch (error) {
+      toast.error("Failed to delete income!");
+    }
   }
 
-  const handleDownloadIncomeDetails = async () => {
-
+  const handleDownloadIncomeDetails = async (month) => {
+    if (!month) {
+      toast.error("Please select a month to download income details.");
+      return;
+    }
+    const currentMonth = new Date().toISOString().slice(0, 7)
+    if (month > currentMonth) {
+      toast.error("Select a valid month.");
+      return;
+    }
+    try {
+      const response = await axiosInstance.get(API_PATHS.INCOME.DOWNLOAD_EXCEL(month),{
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `income_details_${month}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setDownloadIncomeModal(false);
+      toast.success("Income details downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to download income details!");
+    }
   }
 
   useEffect(() => {
@@ -99,7 +136,7 @@ const Income = () => {
             onDelete={(id) => {
               setOpenDeleteAlert({ show: true, data: id });
             }}
-            onDownload={handleDownloadIncomeDetails}
+            onDownload={()=>setDownloadIncomeModal(true)}
           />
 
         </div>
@@ -109,6 +146,27 @@ const Income = () => {
           title="Add Income"
         >
           <AddInComeForm onAddIncome={handleAddIncome} />
+        </Modal>
+        
+        <Modal
+          isOpen={openDeleteAlert.show}
+          onClose={() => setOpenDeleteAlert({ show: false, data: null })}
+          title="Delete Income"
+          >
+            <DeleteAlert
+              onDelete={()=>deleteIncome(openDeleteAlert.data)}
+              content="Are you sure you want to delete this income?"
+            />
+          </Modal>
+        <Modal
+          isOpen={downloadIncomeModal}
+          onClose={() => setDownloadIncomeModal(false)}
+          title="Download Income Details"
+        >
+          <DownloadExcelForm
+            onDownload={(month)=>handleDownloadIncomeDetails(month)}
+            content = "Enter the month for which you want to download income details."
+          />
         </Modal>
       </div>
     </DashboardLayout>

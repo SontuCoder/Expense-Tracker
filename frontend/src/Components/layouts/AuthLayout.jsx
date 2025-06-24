@@ -11,21 +11,21 @@ const AuthLayout = ({ children }) => {
             {children}
             </div>
 
-            <div className="hidden md:block w-[40vw] h-screen bg-violet-100 bg-auth-bg-img bg-cover bg-no-repeat bg-center overflow-hidden p-8 relative">
+            <div className="hidden md:block w-[40vw] h-screen bg-violet-100 bg-auth-bg-img bg-cover bg-no-repeat bg-center p-8 relative overflow-hidden">
                 <div className="w-48 h-48 rounded-[40px] bg-purple-600 absolute -top-7 -left-5 "></div>
                 <div className="w-48 h-56 rounded-[40px] border-[20px] border-fuchsia-600 absolute top-[30%] -right-10"></div>
                 <div className="w-48 h-48 bg-violet-500 absolute -bottom-7 -left-5"></div>
 
-                <div className="grid grid-cols-1 z-20">
+                <div className="grid grid-cols-1 z-20 mb-5">
                     <StataInfoCard
                         icon={<LuTrendingUpDown/>}
                         label = "Track Your Income & Expenses"
-                        value = " 430,000"
+                        value = " 43,000"
                         color = "bg-primary"
                     />
                 </div>
 
-                <img src={CARD_2} alt="authCard" className="w-64 lg:w-[89%] absolute bottom-10 shadow-lg shadow-blue-400/15  rounded-2xl" />
+                <img src={CARD_2} alt="authCard" className="w-64 lg:w-[80%] absolute bottom-10 shadow-lg shadow-blue-400/15 left-1/2 -translate-x-1/2 rounded-2xl" />
             </div>
         </div>
     )
@@ -43,7 +43,7 @@ const StataInfoCard = ({
             </div>
             <div className="">
                 <h6 className="text-xs text-gray-500 mb-1">{label}</h6>
-                <span className="text-[20px]">${value}</span>
+                <span className="text-[20px]">₹{value}</span>
             </div>
         </div>
     )

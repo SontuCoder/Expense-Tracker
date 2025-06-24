@@ -14,6 +14,6 @@ const {
 router.post("/add", protect, addExpense);
 router.get("/get", protect, getAllExpenses);
 router.delete("/delete/:id", protect, deleteExpense);
-router.get("/downloadexcle", protect, downloadExpenseExcle);
+router.get("/downloadexcle/:month", protect, downloadExpenseExcle);
 
 module.exports = router;

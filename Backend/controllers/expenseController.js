@@ -1,5 +1,7 @@
 const Expense = require("../models/Expense.js");
 const xlsx = require("xlsx")
+const fs = require("fs");
+const path = require("path");
 
 
 exports.addExpense = async(req, res)=>{
@@ -58,12 +60,31 @@ exports.deleteExpense = async(req, res)=>{
 };
 
 
-exports.downloadExpenseExcle = async(req, res)=>{
+exports.downloadExpenseExcle = async (req, res) => {
     const userId = req.user._id;
-    try{
-        const expense = await Expense.find({ userId }).sort({ date: -1 });
 
-        const data = expense.map((item)=>({
+    const filePath = path.join(__dirname, "../Expense_details.xlsx");
+    try {
+        const month = req.params.month;
+        // Check if month parameter is provided
+        if (!month) {
+            return res.status(400).json({ message: "Month parameter is required" });
+        }
+
+        // Parse the selected month (expected format: 'YYYY-MM')
+        const startDate = new Date(`${month}-01T00:00:00.000Z`);
+        const endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + 1);
+
+        const expenses = await Expense.find({
+            userId,
+            date: {
+            $gte: startDate,
+            $lt: endDate
+            }
+        }).sort({ date: -1 });
+
+        const data = expenses.map((item) => ({
             Category: item.category,
             Amount: item.amount,
             Date: item.date
@@ -72,11 +93,18 @@ exports.downloadExpenseExcle = async(req, res)=>{
         const wb = xlsx.utils.book_new();
         const ws = xlsx.utils.json_to_sheet(data);
         xlsx.utils.book_append_sheet(wb, ws, "Expenses");
-        xlsx.writeFile(wb, 'Expense_details.xlsx');
-        res.download('Expense_details.xlsx');
 
+        xlsx.writeFile(wb, filePath);
+
+        res.download(filePath, "Expense_details.xlsx", (err) => {
+            if (err) {
+                return res.status(500).json({ message: "File download failed" });
+            }
+
+            fs.unlink(filePath, () => {});
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({ message: "Server Error" });
     }
 };
 
