@@ -93,7 +93,7 @@ npm run start
 <img src="img\image copy 3.png" width="500px">
 
 - Expense
-<img src="img\image.png" width="500px">
+<img src="img\image.png" width="200px">
 
 - Mobile View
 <img src="img\Samsung-Galaxy-S20-localhost.png" width="500px">
